@@ -1,0 +1,395 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+	<div class="col-xs-10 col-xs-offset-1">
+		<h1>eCommerce: A Summary</h1>
+		<p>
+			This eCommerce site was the first Django project I ever made. While admittedly it has some flaws, I hope it communicates one thing: I'm a serious, thoughtful, and self-motivated web developer. I went through the eCommerce tutorial through <a href="http://www.codingforentrepreneurs.com/">Coding for Entrepreneurs</a> and customized the final project to my own learning objectives and standards. The result is some code that has been refactored about twice <em>(I kept learning new things that I just had to apply to the project)</em>.
+		</p>
+		<p>
+			Rather than just provide the raw code on GitHub and move on, I'm doing a write up about what I learned in the process.
+		</p>
+		<p>
+			Questions? Send me a message at sean@drivelous.com or use the <a href="{% url 'contact_me' %}">contact form</a>.
+		<h3>Table of Contents</h3>
+		<ul>
+			<li><a href="#Product">Part I: Product Models</a></li>
+			<li><a href="#Cart">Part II: Shopping Cart</a></li>
+			<li><a href="#Accounts">Part III: Accounts</a></li>
+			<li><a href="#Orders">Part IV: Orders and Stripe API</a></li>
+			<li><a href="#Closing">Part V: Closing</a></li>
+		</ul>
+	</div>
+</div><!--closes row-->
+
+<hr>
+
+<div class="row">
+	<div class="col-xs-10 col-xs-offset-1">
+		<div id="Product" class="walkthroughDiv">
+			<h3>Part I: Product Models</h3>
+			<p>
+				The first stop for customizing the end product of the site from Coding for Entrepreneurs was to create a more extensive Product model to handle multiple product types. A single product model seemed a bit naive and simplistic and I wanted to learn the logic of maintaining a multi-product database and web app.
+			</p>
+			<p>
+				As a total noob, I was pretty lost for a while and posted on <a href="http://www.reddit.com/r/django/comments/23wt4t/can_you_review_my_models_for_a_store_that/">/r/django</a> to get a little help. After a period of trial and error -- always going into the Django shell every model change to ensure the models worked as I hoped -- I finally settled on a model that would work for my e-store consisting of two product types: Shirts and Albums.
+			</p>
+			<p>
+				I made two big mistakes that had major ramifications in the rest of the models.
+				<ol>
+					<li>The inclusion of a product-specific row in the Product model <em>(sizes for T-shirts)</em>.</li>
+					<li>Not giving every T-Shirt color/size combination a unique row in the Product table</li>
+				</ol>
+			</p>
+			<p>
+				The first mistake led to the necessity to include <code1>size=None</code1> for all non T-shirt product queries. For example:
+			</p>
+				<pre>
+					<code>
+						<small>
+<strong>CODE SAMPLE #1</strong>
+
+# all_products/models.py
+# Product model method
+
+	def get_original_price(self, size=None):
+		"""Retrieve original price of product"""
+
+		if str(self.product_type) == 'Album':
+			return self.album_set.all()[0].original_price
+		elif str(self.product_type) == 'Shirt':
+			shirt_query = ShirtQuery(self)
+			return shirt_query.get_original_price(size)
+
+						</small>
+					</code>
+				</pre>
+			<p>
+				The second mistake led to some gnarly queries for T-Shirts. For example, since music albums have a single one-to-one foreign key relation to the Product model, a query for any albums inventory would be as easy as <code1>product.album_set.first().stock</code1>. However, a shirt query would need to include the size of the product every time, EX: <code1>product.shirtstyle_set.all()[0].xs_stock</code1>.
+			</p>
+			<p>
+				The second time around refactoring the model, I decided to come up with a helper class called <code1>ShirtQuery</code1>, which helped me come up with the complicated queries once and then use easy-to-read Product model methods throughout the rest of the project as shown in sample #1 above. Here's a small copy:
+			<pre>
+				<code>
+					<small>
+
+<strong>CODE SAMPLE #2</strong>
+
+# all_products.queryutil.py
+# Product model helper class
+class ShirtQuery(object):
+	"""Minimizes overhead from complicated queries"""
+
+	def __init__(self, product):
+		self.shirt = product.shirtstyle_set.all()[0]
+		
+		self.shirt_stock = {'XS': 'xs_stock',
+						'S': 's_stock',
+						'M': 'm_stock',
+						'L': 'l_stock',
+						'XL': 'xl_stock'}
+		
+		self.shirt_original_price = {'XS': 'xs_original_price',
+									'S': 's_original_price',
+									'M': 'm_original_price',
+									'L': 'l_original_price',
+									'XL': 'xl_original_price'}
+		
+		self.shirt_sale_price = {'XS': 'xs_sale_price',
+								'S': 's_sale_price',
+								'M': 'm_sale_price',
+								'L': 'l_sale_price',
+								'XL': 'xl_sale_price'}
+
+	def get_original_price(self, size):
+		"""Return original price of shirt"""
+		try:
+			return getattr(self.shirt, self.shirt_original_price[size])
+		except KeyError as e:
+			print "{0} is not a valid size.".format(e)
+
+					</small>
+				</code>
+			</pre>
+		<p>
+			If I was to go through this again, I'd definitely build a more extensible master Product model. But I'm still pretty proud of myself for coming up with ShirtQuery to mask the complicated logic because outside of the Product models, everything reads as simple model instance get methods.
+		</p>
+	</div><!--closes Product div-->
+
+<div id="Cart" class="walkthroughDiv">
+	<h3> Part II: Shopping Cart</h3>
+	<p>
+		I'm very proud of the shopping cart code. It's the project I used to tackle learning how to use the request object and sessions. My goal was to create a shopping cart like Amazon's -- ie, would allow anonymous users to add products to a shopping cart and remember them even when they closed their browser -- and only prompt the creation of an account once that user wanted to finalize their order.
+	</p>
+	<p>
+		The user's cart is controlled by a function aptly named <code1>create_or_retrieve_cart</code1> that takes a <code1>request</code1> object and determines if it should create a new cart or retrieve a previously created cart. The code is as follows:
+	</p>
+	<pre>
+		<code>
+			<small>
+<strong>CODE SAMPLE # 3</strong>
+
+# cart/custom.py
+
+def create_or_retrieve_cart(request):
+	"""Creates or retrieves carts by going through all possible scenarios of
+	creation for an authenticated or non-authenticated user"""
+
+	if request.user.is_anonymous():
+		try:
+			cart = retrieve_anon_cart(request)
+		except Cart.DoesNotExist:
+			cart = create_anon_user_cart(request)
+	elif request.user.is_authenticated():
+		try:
+			cart = retrieve_auth_user_cart(request)
+		except Cart.DoesNotExist:
+			cart = create_auth_user_cart(request)
+		except MultipleObjectsReturned:
+			cart = create_combined_cart(request)
+
+	return cart
+			</small>
+		</code>
+	</pre>
+	<p>
+		The function itself reads like pseudocode, but the logic of it is basically this:
+	</p>
+	<div class="well">
+		<pre>
+			<small>
+If the user is not logged in:
+	Try to find a cart associated with that user's anon session
+	If a cart does not exist, create a cart and save that cart to their anon Django session
+
+Else, if the user is logged in:
+	Try to find that user's active shopping cart (ie not a previous and paid for order's cart)
+	If one does not exist, create a cart and save it to user's account
+			</small>
+		</pre>
+	</div>
+	<p>
+		Writing this app really taught me about edge cases. Let's face it: users don't act how we want them to.
+		The edge case of shopping carts is this: if a user is logged in and creates a shopping cart, that cart is saved to their user profile and is readily accessible the next time they log in. If that user logs out, we have no way of knowing that they already have a shopping cart open. If, as a logged out anonymous user, that same customer adds an item to a cart and then tries to log in, two separate shopping carts will be returned associated with their account (hence, the exception <code1>MultipleObjectsReturned</code1> in code sample #3).
+	<p>
+	<p>
+		In this case, the site takes both carts and uses a model method called <code1>create_or_update_cart_item</code1> which goes through the contents of the multiple old carts, creates a new cart, and combines identical products into one <code1>CartItem</code1> object or creates a new <code1>CartItem</code1> object -- effectively summing the two carts together
+	</p>
+	<pre>
+		<code>
+			<small>
+<strong>CODE SAMPLE #4</strong>
+
+# cart/custom.py
+
+def create_combined_cart(request):
+	"""Retrieves active carts and combines them
+	into a new cart. Sets old carts inactive.
+	"""
+
+	profile = Profile.objects.get(user=request.user)
+	cart_list = profile.retrieve_active_carts()
+	profile.set_carts_inactive(cart_list)
+	new_cart = create_auth_user_cart(request)
+
+	for cart in cart_list:
+		for cartitem in cart.get_cart_items():
+			new_cartitem = new_cart.create_or_update_cart_item(request=request,
+													product_pk=cartitem.product.pk,
+													size=cartitem.size,
+													quantity=cartitem.quantity)
+
+	new_cart.save()
+	return new_cart
+			</small>
+		</code>
+	</pre>
+	<p>
+		More than just the simple models though, creating the shopping cart allowed me to understand how to use multiple forms on a single page.
+	</p>
+	<p>
+		When viewing the cart, there are two forms in action:
+		<ol>
+			<li><code1>delete_form</code1>, which takes a CartItem's pk, validates that the CartItem is tied to that particular cart and that cart is tied to the user deleting it, and then finally deletes it from that cart</li>
+			<li><code1>CartItemSet</code1>, which is a formset of the <code1>UpdateItemForm</code1> created by Django's <a href="https://docs.djangoproject.com/en/dev/topics/forms/formsets/">formset factory</a></li>
+		</ol>
+	</p>
+	<p>
+		As shown in code sample #5 below, if a user clicks on the button 'update', the shopping cart helper class <code1>CartQuery</code1> uses a method called <code1>update_cart</code1> which iterates through all the user input CartItem fields and sees if any value is different from the CartItem field in the database. If there is difference, <code1>update_cart</code1> changes the quantity of the particular CartItem and then recalculates. If the user clicks on 'delete', it deletes the item specified (using hidden form inputs for all of this).
+	</p>
+	<p>
+		This was a good learning lesson for me because I spent ~1 day trying to figure out how to get the name of the button into the request object to specify which actions to take (EX: <code1>if 'delete' in request.POST</code1>). Before this paradigm, <code1>request.POST</code1> was no able to signify which action was being performed.
+	</p>
+	<p>
+		Using this paradigm allows for multi-functional views to be easy to follow and compartmentalize -- as I will show you in the payment views/orders apps below
+	</p>
+	<pre>
+		<code>
+			<small>
+
+<strong>CODE SAMPLE #5</STRONG>
+# cart/views.py
+
+def update_cart(request):
+	"""Updates quantity of all items in cart that have changed"""
+
+	cart = create_or_retrieve_cart(request)
+	number_items = cart.size()
+	CartItemSet = formset_factory(UpdateItemForm, extra=number_items)
+
+	if request.method == 'POST':
+
+		# Executes if user is deleting an item from cart
+		if 'delete' in request.POST:
+			delete_form = DeleteItemForm(request.POST)
+			if delete_form.is_valid():
+				cart_query = CartQuery(request=request, cart=cart,
+											cleaned_data=delete_form.cleaned_data)
+				cart_query.delete_item()
+
+		# Executes if user clicks 'update cart'
+		# Goes item by item in cart and checks to see which quantities user updated
+		elif 'update' in request.POST:
+			cartitemset = CartItemSet(request.POST)
+			if cartitemset.is_valid():
+				cart_query = CartQuery(request=request, cart=cart,
+											cleaned_data=cartitemset.cleaned_data)
+				cart_query.update_cart()
+	
+	return HttpResponseRedirect(reverse('view_cart'))
+			</small>
+		</code>
+	</pre>
+	<p>
+		As shown in code sample #5, I have a helper function called <code1>CartQuery</code1> above. You'll see such helper classes all over the code of this project. Why though?
+	</p>
+	<p>
+		After the first time refactoring my code, adding new things, and being completely befuddled by my own code just two weeks after I had first written it, it became my philosophy that most/all database-altering logic should be done away from the actual view and managed through helper functions.
+	</p>
+	<p>
+		Writing logic in views creates confusing logic and redundancy up the wazoo. In my newbie web dev opinion, views should direct the flow of user input to the correct helper classes/functions but the actual data should be altered elsewhere.
+	</p>
+	<p>
+		Such a philosophy allowed me to refactor the above code from code sample #6 below which is incredibly verbose and hard to follow.
+	</p>
+	<pre>
+		<code>
+			<small>
+
+# old update_cart code
+# Admittedly, this is even harder to read because the indentation is bad
+
+def update_cart(request):
+	cart = create_or_retrieve_cart(request)
+	number_items = len(cart.cartitem_set.all())
+	CartItemSet = formset_factory(UpdateItem, extra=number_items)
+	if request.method == 'POST':
+		if 'delete' in request.POST:
+			delete_form = DeleteItem(request.POST)
+			if delete_form.is_valid():
+				cd = delete_form.cleaned_data
+				if cart.user == request.user:
+					cartitem = cart.cartitem_set.get(pk=cd['cartitem'])
+					cartitem.delete()
+					cart.save()
+					calculate_cart(cart)
+					return HttpResponseRedirect('/cart/')
+				else:
+					# Will only happen if user is tampering with POST data
+					raise Http404
+
+		elif 'update' in request.POST:
+			cartitemset = CartItemSet(request.POST)
+			if cartitemset.is_valid():
+				cd = cartitemset.cleaned_data
+				for item in cd:
+					quantity = item['quantity']
+					retrieve_cartitem = cart.cartitem_set.get(pk=item['cartitem'])
+
+					if retrieve_cartitem.quantity != quantity:
+						product_type = str(retrieve_cartitem.product_type)
+
+						if product_type == 'Shirt':
+							product = retrieve_cartitem.product.shirtstyle_set.all()[0]
+							size = retrieve_cartitem.size
+							msgs = add_or_adjust_quantity(retrieve_cartitem, product, product_type, quantity, size=size)
+							calculate_cart(cart)
+							cart.save()
+
+						elif product_type == 'Album':
+							product = retrieve_cartitem.product.album_set.all()[0]
+							msgs = add_or_adjust_quantity(retrieve_cartitem, product, product_type, quantity)
+							calculate_cart(cart)
+							for item in cart.cartitem_set.all():
+
+						if msgs:
+							for msg in msgs:
+								messages.info(request, msg)
+
+	return HttpResponseRedirect('/cart/')
+
+				</small>
+			</code>
+		</pre>
+		<p>
+			Better, no?
+		</p>
+
+	</div>
+	<div id="Accounts" class="walkthroughDiv">
+		<h3>Part III: Accounts</h3>
+		<p>
+			<em>
+				Coming soon
+			</em>
+		</p>
+	</div><!--closes Accounts div-->
+	<div id="Orders" class="walkthroughDiv">
+		<h3>Part IV: Orders and Stripe</h3>
+		<p>
+			<em>
+				Coming soon
+			</em>
+		</p>
+	</div><!--closes Orders div-->
+	<div id="Closing" class="walkthroughDiv">
+		<h3>Part V: Closing comments</h3>
+		<p>
+			<em>
+				Coming soon
+			</em>
+		</p>
+	</div><!--closes Orders div-->
+	
+</div>
+</div>
+
+{% endblock %}
+
+{% block js_highlight %}
+
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://google-code-prettify.googlecode.com/svn/trunk/src/prettify.css"></link>  
+<script src="https://google-code-prettify.googlecode.com/svn/trunk/src/prettify.js"></script>  
+<script>
+    function styleCode() {
+        if (typeof disableStyleCode != 'undefined') { return; }
+
+        var a = false;
+        
+        $('code').each(function() {
+            if (!$(this).hasClass('prettyprint')) {
+                $(this).addClass('prettyprint');
+                a = true;
+            }
+        });
+
+        if (a) { prettyPrint(); } 
+    }
+
+    $(function() {styleCode();});
+</script>
+
+{% endblock %}

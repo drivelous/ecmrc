@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+	<div class="col-xs-10 col-xs-offset-1">
+		<h2>
+			404: Not found
+		</h2>
+		<p>
+			Hey! Where you going? Listen, bud. We don't have anything here. We can't be everywhere at once.
+		</p>
+		<p>
+			We'll lead you back to the cabin, though. We'll drink hot cocoa, wear cool <a href="{% url 'all_shirts' %}">shirts</a>, and listen to some <a href="{% url 'all_albums' %}">albums</a>.
+		</p>
+		<p>
+			It'll be chill, man. Totally chill.
+		</p>
+	</div>
+</div>
+
+
+{% endblock %}

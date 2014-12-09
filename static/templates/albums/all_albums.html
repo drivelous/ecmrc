@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+	{% include 'results.html' %}
+	<div class="row">
+		<div class="col-xs-2">
+			<h4>Filter results</h4>
+			<ul class="list-unstyled">
+				{% if not artist_query %}
+				<span>Artists</span>
+				{{ request.GET.querydict }}
+					{% for artist in artists %}
+						<li><a href="{{ currenturl }}artist={{ artist }}">{{ artist }}</a></li>
+					{% endfor %}
+				{% endif %}
+			</ul>
+		</div><!--closes categories col-->
+	<div class="col-xs-10">
+		{% if paginator.count == 0 %}
+			<div class="row">
+				<div class="col-xs-12">
+					<p><em>There were no results for your search.</em></p>
+				</div>
+			</div>
+		{% else %}
+
+		<div class="row">
+			<div class="col-xs-12">
+			{% if artist_query %}
+				<h4>Filters applied:</h4>
+				<p>Artist: {{ artist_query }}</p>
+			{% endif %}
+			</div>
+		</div>
+	{% for album in albums %}
+		<div class="row newGroup">
+			<div class="col-xs-3">
+				<a href="{% url 'album_detail' album.get_slug %}"><img style="max-height: 100px;" src="{{ MEDIA_URL }}{{ album.get_default_image }}"></br></a>
+				<a class="text-center" href="{% url 'album_detail' album.get_slug %}">{{ album.name }}</a>
+			</div>
+			<div class="col-xs-7">
+				<p>{{ album.description|truncatewords:30 }}</p>
+			</div>
+
+			<div class="col-xs-2">
+				{% if album.is_sale %}
+					<p style="text-decoration:line-through">${{ album.get_original_price }}</p>
+					<p style="font-weight:bold">${{ album.get_price }}</p>
+				{% else %}
+					<p>${{ album.get_original_price }}</p>
+				{% endif %}
+			</div>
+
+		</div><!--close row-->
+	{% endfor %}
+	{% endif %}
+		</div>
+	</div><!--closes row-->
+
+{% endblock %}

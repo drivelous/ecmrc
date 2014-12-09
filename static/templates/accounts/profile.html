@@ -1,0 +1,125 @@
+{% extends 'accounts/base_profile.html' %}
+
+{% block profile %}
+
+<div class="row">
+	<div class="col-xs-12">
+		{% if cart.size > 0 %}
+			<div class="alert alert-info" role="alert">
+				 <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span>
+ 				<span><strong>Shopping Cart Alert</strong></span>
+				<p>You currently have an active shopping cart. To view its contents, click <a href="{% url 'view_cart' %}">here</a>.</p>
+			</div>
+		{% endif %}
+		<h3>Default Shipping Address</h3>
+			<div class="well">
+				{% if shipping.address1 %}
+					<p>
+						<strong><em>{{ shipping.nickname }}</em></strong></br>
+						{{ shipping.first_name }} {{shipping.last_name }}</br>
+						{{ shipping.address1 }}</br>
+						{% if shipping.address2 %}
+							{{ shipping.address2 }}</br>
+						{% endif %}
+						{{ shipping.city }}, {{ shipping.state }} {{ shipping.zip_code }}</br>
+						{{ shipping.country }}</br>
+						{{ shipping.phone_number }}</br>
+					</p>
+				{% else %}
+					<p>
+						<em>There is no default shipping address specified. Click 'Change shipping' on the left panel to add a shipping address.</em>
+					</p>
+				{% endif %}
+			</div>
+		<h3>Default Payment</h3>
+		<div class="well">
+			{% if payment.billing_address1 %}
+				<div class="row">
+					<div class="col-xs-6">
+						<p>
+							<strong>Payment</strong></br>
+							{{ payment.brand }} card ending in {{ payment.cc_four }}</br>
+							Exp: {{ payment.exp_month }}/{{ payment.exp_year }}
+						</p>
+					</div>
+					<div class="col-xs-6">
+						<p>
+							<strong>Billing Address</strong></br>
+							{{ payment.full_name }}</br>
+							{{ payment.billing_address1 }}</br>
+							{% if payment.billing_address2 %}{{ payment.billing_address2 }}</br>{% endif %}
+							{{ payment.billing_city }}, {{ payment.billing_state }} {{ payment.billing_zip }}</br>
+							{{ payment.billing_country }}</br>
+						</p>
+					</div>
+				</div>
+				{% else %}
+					<div class="row">
+						<div class="col-xs-12">
+						<p><em>There is no default payment method specified. Click 'Change payment' on the left panel to add a payment method.</em></p>
+						</div>
+					</div>
+				{% endif %}
+			</div>
+		<h3>Latest Order History</h3>
+			{% if orders %}
+			<small>
+			{% for order in orders %}
+				<div class="well">
+					<div class="row">
+						<div class="col-xs-4">
+							<strong>Ordered</strong></br>
+							<span>{{ order.date_completed.date }}</span>
+						</div>
+						<div class="col-xs-4">
+							<strong>Order Total</strong></br>
+							<span>${{ order.cart.total }}</span>
+						</div>	
+						<div class="col-xs-4">
+							<strong>Order #{{ order.order_id }}</strong></br>
+							<a href="{% url 'order_detail' order.order_id %}">Order Details</a>
+						</div>
+					</div><!--close row-->
+					<hr>
+					<div class="row">
+							<div class="col-xs-1">
+								<strong>Qty</strong>
+							</div>
+							<div class="col-xs-3">
+								<strong>Item</strong>
+							</div>
+							<div class="col-xs-2">
+								<strong>Item Total</strong>
+							</div>
+					</div>
+				{% for item in order.cart.get_cart_items %}
+					<div class="row">
+							<div class="col-xs-1">
+								<span>{{ item.quantity }}</span>
+							</div>
+							<div class="col-xs-3">
+								<span>{{ item.name }} -- ({{ item.product_type }})</span>
+							</div>
+							<div class="col-xs-2">
+								<span>${{ item.total }}</span>
+							</div>
+					</div>
+				{% endfor %}
+			</div>
+			{% endfor %}
+			</small>
+			{% else %}
+			<div class="well">
+				<div class="row">
+					<div class="col-xs-12">
+						<p>
+							<em>There are no orders yet. Perhaps search our extensive selection of <a href="{% url 'all_shirts' %}">shirts</a>.</em>
+						</p>
+					</div>
+				</div>
+			</div>
+			{% endif %}
+	</div>
+</div>
+
+{% endblock %}

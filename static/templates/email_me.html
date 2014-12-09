@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+	<div class="col-xs-8 col-xs-offset-2">
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<h3 class="text-center">Contact Form</h3>
+				<div class="row">
+					<div class="col-xs-11 col-xs-offset-1">
+						<p>Hey, thanks for your interest in this project of mine. You can email me directly at sean@drivelous.com or you can use the form below.</p>
+						<p>
+						I'll probably get back to you within ~24 hours since I'll be monitoring this thing pretty closely.
+						</p>
+						<p>Again, thanks for your interest. It makes it all worth it.</p>
+					</div>
+				</div>
+				<form method="POST" class="form" role="form">{% csrf_token %}
+		          <div class="form-group">
+		            <label for="id_name" name="name" class="control-label">Name</label>
+		            <input id="id_name" type="text" name="name" class="form-control" placeholder="Name goes here">
+					{% if form.name.errors %}
+						<ul class="errorlist list-unstyled">
+							{% for error in form.name.errors %}
+							<li>{{ error }}</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+		          </div><!--close form-group-->
+		          <div class="form-group">
+		            <label for="id_email" name="email" class="control-label">Email</label>
+		            <input id="id_email" type="text" name="email" class="form-control" placeholder="user@example.com">
+					{% if form.email.errors %}
+						<ul class="errorlist list-unstyled">
+							{% for error in form.email.errors %}
+							<li>{{ error }}</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+		          </div><!--close form-group-->
+		          <div class="form-group">
+		            <label for="id_subject" name="subject" class="control-label">Subject</label>
+		            <small><p><em>EX: 'Job opportunity', 'Consulting inquiry', 'Are you single????'</em></p></small>
+		            <input id="id_subject" type="text" name="subject" class="form-control" placeholder="Subject">
+					{% if form.subject.errors %}
+						<ul class="errorlist list-unstyled">
+							{% for error in form.subject.errors %}
+							<li>{{ error }}</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+		          </div><!--close form-group-->
+		          <div class="form-group">
+		            <label for="id_message" name="message" class="control-label">Message</label>
+		            <textarea id="id_message" type="textarea" rows="7" name="message" class="form-control" placeholder="Type your message here"></textarea>
+					{% if form.message.errors %}
+						<ul class="errorlist list-unstyled">
+							{% for error in form.message.errors %}
+							<li>{{ error }}</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+		          </div><!--close form-group-->
+		          <div class="form-group">
+		              <button type="submit" class="btn btn-success pull-right">Send message</button>
+		          </div>
+			</div><!--close panel body-->
+		</div><!--close panel-->
+	</div><!--close col-xs-8-->
+</div><!--closes row-->
+
+{% endblock %}

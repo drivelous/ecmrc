@@ -1,0 +1,67 @@
+<div class="row">
+	<div class="col-xs-6">
+{% if paginator.count == 0 %}
+	<span>No results</span>
+{% elif albums %}
+	<span>Displaying {{ albums.start_index }}-{{ albums.end_index }} of {{ albums.paginator.count }} results</span>
+{% elif artists %}
+	<span>Displaying {{ artists.start_index }}-{{ artists.end_index }} of {{ artists.paginator.count }} results</span>
+{% elif shirts %}
+	{% if shirts.count > 0 %}
+	<span>Displaying {{ shirts.start_index }}-{{ shirts.end_index }} of {{ shirts.paginator.count }} results</span>
+{% else %}
+	<span>No results.</span>
+
+{% endif %}
+{% elif brands %}
+	<span>Displaying {{ brands.start_index }}-{{ brands.end_index }} of {{ brands.paginator.count }} results</span>
+{% else %}
+	<span>No results<span>
+{% endif %}
+	</div>
+{% if paginator.count == 0 %}
+		<div class="col-xs-6">
+			<div class="pull-right">
+				<span>Page 1 of 1.</span>
+			</div>
+		</div>
+{% elif shirts %}
+	<div class="col-xs-6">
+		<div class="pull-right">
+		    <span class="step-links">
+		        {% if shirts.has_previous %}
+		            <a href="?page={{ shirts.previous_page_number }}"><span class="glyphicon glyphicon-arrow-left"></span></a>
+		        {% endif %}
+
+		        <span class="current">
+		            Page {{ shirts.number }} of {{ shirts.paginator.num_pages }}.
+		        </span>
+
+		        {% if shirts.has_next %}
+		            <a href="?page={{ shirts.next_page_number }}"><span class="glyphicon glyphicon-arrow-right"></span></a>
+		        {% endif %}
+		    </span>
+		</div>
+	</div>
+{% elif albums %}
+<div class="col-xs-6">
+	<div class="pull-right">
+	    <span class="step-links">
+	        {% if albums.has_previous %}
+	            <a href="?page={{ albums.previous_page_number }}"><span class="glyphicon glyphicon-arrow-left"></span></a>
+	        {% endif %}
+
+	        <span class="current">
+	            Page {{ albums.number }} of {{ albums.paginator.num_pages }}.
+	        </span>
+
+	        {% if albums.has_next %}
+	            <a href="?page={{ albums.next_page_number }}"><span class="glyphicon glyphicon-arrow-right"></span></a>
+	        {% endif %}
+	    </span>
+	</div>
+</div>
+{% endif %}
+</div>
+>>>>>>> postgres
+<hr>

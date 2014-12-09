@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+	{% if messages %}
+	<ul class="messages">
+	    {% for message in messages %}
+	    <div class="alert alert-info" role="alert">
+	    	{% if 'shop_shirts' in message.tags %}
+	    		{{ message }} <a href="{% url 'all_shirts' %}">here</a>.
+	    	{% elif 'shop_albums' in message.tags %}
+	    		{{ message }} <a href="{% url 'all_albums' %}">here</a>.
+	    	{% else %}
+	    		{{message }}
+ 	    	{% endif %}
+ 	   	</div>
+	    {% endfor %}
+	</ul>
+	{% endif %}
+
+	{% if cart and cart.size > 0 %}
+
+	<form id="updateForm" method="POST" action="{% url 'update_cart' %}">{% csrf_token %}
+		{{ CartItemSet.management_form }}
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Photo</th>
+				<th>Name</th>
+				<th>Price</th>
+				<th>Quantity</th>
+				<th>Remove from Cart</th>
+				<th>Total</th>
+			</tr>
+		</thead>
+
+			{% for item in cart.get_cart_items %}
+				<tr>
+					{% if item.product_type|stringformat:"s" == "Shirt" %}
+						<td><a href="{% url 'shirt_detail' item.product.slug %}" target="_blank"><img style="max-width:50px" src="{{ MEDIA_URL }}{{ item.product.get_default_image }}"></a></td>
+					{% elif item.product_type|stringformat:"s" == "Album" %}
+						<td><a href="{% url 'album_detail' item.product.slug %}" target="_blank"><img style="max-width:50px" src="{{ MEDIA_URL }}{{ item.product.get_default_image }}"></a></td>	
+					{% endif %}				
+					<td>
+						{{ item.name }}
+							<small>
+								<ul class="cartitem-detail">
+									{% if item.product_type|stringformat:"s" == "Shirt" %}
+										<li>Brand: <a href="{% url 'brand_detail' item.product.get_parent_slug %}" target="_blank">{{ item.product.get_parent }}</a></li>
+										<li>Color: {{ item.product.get_style_name }}</li>
+										<li>Size: {{ item.size }}</li>
+									{% elif item.product_type|stringformat:"s" == "Album" %}
+										<li>by <a href="{% url 'artist_detail' item.product.get_parent_slug %}" target="_blank">{{ item.product.get_parent }}</a></li>
+									{% endif %}
+								</ul>
+							</small>
+					</td>
+					<td>${{ item.price|stringformat:".02f" }}</td>
+					<td width="10%"><input style="width: 60px" type="number" id="id_form-{{ forloop.counter0 }}-quantity" name="form-{{ forloop.counter0 }}-quantity" value="{{ item.quantity }}"/></td>
+					<input id="id_form-{{ forloop.counter0 }}-cartitem" name="form-{{ forloop.counter0 }}-cartitem"
+					 type="hidden" value="{{ item.pk }}" />
+					<td><form method="POST" action='/cart/update/'>{% csrf_token %}
+						<input id="id_cartitem" maxlength="5" name="cartitem" type="hidden" value="{{ item.pk }}"/>
+						<input class="pull-left btn-s btn-link" type="submit" name="delete" value="Remove">
+					</form></td>
+					<td>${{ item.total|stringformat:".02f" }}</td>
+				</tr>
+			{% endfor %}
+				<tfoot>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td><strong>Subtotal: </br></br>
+						<input class="pull-left btn btn-default" type="submit" name="update" form="updateForm" value="Update"></td>
+					</form>
+					<td>${{ cart.total|stringformat:".02f" }}</br></br>
+    					<a class="btn btn-success" href="{% url 'checkout' %}">Checkout</a>
+					</td>
+				</tfoot>
+		</table>
+		{% else %}
+		<div class="row">
+			<div class="col-s-12">
+				<p>Your cart is empty! Go add something from our catalog of <a href="{% url 'all_albums' %}">albums</a>.</p>
+			</div>
+		</div>
+	{% endif %}
+
+{% endblock %}

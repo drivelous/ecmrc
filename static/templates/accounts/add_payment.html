@@ -1,0 +1,217 @@
+{% extends 'accounts/base_profile.html' %}
+
+{% block profile %}
+	<div class="row">
+		<a href="{% url 'profile' %}">&larr; Back to Profile</a>
+	</div>
+	</br>
+	{% if messages %}
+	    {% for message in messages %}
+	    	{% if message.tags == 'info' %}
+			    <div class="alert alert-info" role="alert"{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</div>
+			{% elif message.tags == 'error' %}
+				<div class="alert alert-danger" role="alert"{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</div>
+			{% endif %}
+	    {% endfor %}
+	{% endif %}
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h2>Current cards on File</h2>
+		</div>
+		<div class="panel-body">
+		<div class="row">
+		{% if cards %}
+		{% for card in cards %}
+		<div class="col-xs-6">
+			<div class="panel panel-default">
+				<div class="panel-body">
+			{% if card.id == default_card %}
+				<span class="label label-primary">Default</span>
+			{% else %}
+				</br>
+			{% endif %}
+			<form action="/accounts/payment/" method="POST">{% csrf_token %}
+			<p>{{ card.brand }} ending in {{card.last4 }}</br>
+				{{ card.address_line1 }}</br>
+				{{ card.address_city }}, {{ card.address_state }} {{ card.address_zip }}</br>
+				Exp: {{ card.exp_month }}/{{ card.exp_year }}
+			</p>
+				<input id="id_index" name="index" type="hidden" value="{{ forloop.counter0 }}">
+				<input class="btn btn-xs btn-default pull-left" type="submit" name="delete" value="delete?">
+				<input class="btn btn-xs btn-default pull-right" type="submit" name="default" value="Make default">
+			</form>
+		</div>
+	</div>
+</div>
+			{% endfor %}
+			{% else %}
+				<div class="col-xs-12">
+					<p><em>You have no payments on file. Add one below.</em></p>
+				</div>
+			{% endif %}
+		</div>
+	</div>
+</div>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+	<h2>Add another card</h2>
+		</div>
+		<div class="panel-body">
+			<div class="alert alert-danger">
+				 <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+				 <span><strong>Heads up!</strong></span>
+				 <p>This is a portfolio project that uses the payment engine Stripe. It is currently in TEST mode and does not accept real credit card numbers. To simulate payment information, enter one of the cards below:</p>
+				</br>
+				 <ul>
+				 	<li>Visa: 4242 4242 4242 4242</li>
+				 	<li>MasterCard: 5555 5555 5555 4444</li>
+				 	<li>AmEx: 3782 822463 10005</li>
+				 </ul>
+				</br>
+				 <p>For the full list of test cards, check <a href="https://stripe.com/docs/testing#cards" target="_blank">here</a>.</p>
+			</div>
+  <form action="" method="POST" id="payment-form">{% csrf_token %} <!--Form to add shipping -->
+	</br>
+	{{ form.non_field_errors }}
+	{% if shipping_address %}
+		<small>
+		<h4>Default shipping address</h4>
+		<div class="row">
+		<div class="col-xs-10 col-xs-offset-1">
+			<p><em><strong>{{ shipping_address.nickname }}</strong></em></br>
+			{{ shipping_address.first_name }} {{shipping_address.last_name }}</br>
+			{{ shipping_address.address1 }}</br>
+			{% if shipping_address.address2 %}
+				{{ shipping_address.address2 }}</br>
+			{% endif %}
+			{{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.zip_code }}</p>
+			<div class="fieldWrapper">
+				{{ use_shipping_as_billing_form.use_shipping }}
+			    <label for="id_use_shipping">Check box to use this as billing address</label>
+			    <p><em>If you check this box, you can skip the address form below and go directly to payment information</em></p>
+			</div>
+		</div>
+		</div>
+	<hr>
+	</small>
+	{% else %}
+	{% endif %}
+	<div class="col-xs-6">
+	<h3>Billing address</h3>
+		<div class="fieldWrapper">
+		    {{ add_payment_form.first_name.errors }}
+		    <label for="id_first_name">First name:</label>
+		    {{ add_payment_form.first_name }}
+		</div>
+		<div class="fieldWrapper">
+		    {{ add_payment_form.last_name.errors }}
+		    <label for="id_last_name">Last name:</label>
+		    {{ add_payment_form.last_name }}
+		</div>
+		<div class="fieldWrapper">
+		    {{ add_payment_form.address1.errors }}
+		    <label for="id_address1">Address1:</label>
+		    {{ add_payment_form.address1 }}
+		</div>
+		<div class="fieldWrapper">
+		    {{ add_payment_form.address2.errors }}
+		    <label for="id_address2">Address2:</label>
+		    {{ add_payment_form.address2 }}
+		</div>
+		<div class="fieldWrapper">
+		    {{ add_payment_form.city.errors }}
+		    <label for="id_city">City:</label>
+		    {{ add_payment_form.city }}
+		</div>
+		<div class="fieldWrapper">
+		    {{ add_payment_form.state.errors }}
+		    <label for="id_state">State:</label>
+		    {{ add_payment_form.state }}
+		</div>
+		<div class="fieldWrapper">
+		    {{ add_payment_form.country.errors }}
+		    <label for="id_country">Country:</label>
+		    {{ add_payment_form.country }}
+		</div>
+		<div class="fieldWrapper">
+		    {{ add_payment_form.zip_code.errors }}
+		    <label for="id_zip_code">Zip code:</label>
+		    {{ add_payment_form.zip_code }}
+		</div>
+	</div><!--close billing address-->
+	<div class="col-xs-6">
+  <h3>New card</h3>
+    <span class="payment-errors"></span>
+ 
+    <div class="form-row">
+      <label>
+        <span>Card Number</span>
+        <input type="text" size="20" data-stripe="number"/>
+      </label>
+    </div>
+ 
+    <div class="form-row">
+      <label>
+        <span>CVC</span>
+        <input type="text" size="4" data-stripe="cvc"/>
+      </label>
+    </div>
+ 
+    <div class="form-row">
+      <label>
+        <span>Expiration (MM/YYYY)</span>
+        <input type="text" size="2" data-stripe="exp-month"/>
+      </label>
+      <span> / </span>
+      <input type="text" size="4" data-stripe="exp-year"/>
+    </div>
+    <form action="" method="POST" id="save_card">
+	<div class="fieldWrapper">
+		{{ new_card_default_form.make_default }}
+	    <label for="id_make_default">Check box to use this as your default payment</label>
+	</div>
+	</div><!--col xs-->
+	<div class="col-xs-8 col-xs-offset-2">
+    	<input class="btn pull-right" type="submit" name="save" value="Save Card">
+  	</form>
+	</div>
+</div>
+</div>
+{% endblock %}
+
+{% block js_checkout %}
+
+    // This identifies your website in the createToken call below
+    Stripe.setPublishableKey('pk_test_pg1JLNABYjkb84SCeSjfCMO9');
+ 
+    var stripeResponseHandler = function(status, response) {
+      var $form = $('#payment-form');
+ 
+      if (response.error) {
+        // Show the errors on the form
+        $form.find('.payment-errors').text(response.error.message);
+        $form.find('button').prop('disabled', false);
+      } else {
+        // token contains id, last4, and card type
+        var token = response.id;
+        // Insert the token into the form so it gets submitted to the server
+        $form.append($('<input type="hidden" name="stripeToken" />').val(token));
+        // and re-submit
+        $form.get(0).submit();
+      }
+    };
+ 
+    jQuery(function($) {
+      $('#payment-form').submit(function(e) {
+        var $form = $(this);
+ 
+        // Disable the submit button to prevent repeated clicks
+        $form.find('button').prop('disabled', true);
+ 
+        Stripe.createToken($form, stripeResponseHandler);
+ 
+        // Prevent the form from submitting with the default action
+        return false;
+      });
+    });
+{% endblock %}

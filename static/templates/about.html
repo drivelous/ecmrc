@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+	<div class="col-xs-10 col-xs-offset-1">
+	<h1>Hello, World</h1>
+		<p>
+			Thanks for your interest. I'll add a more extensive about later.
+		</p>
+		<p>
+			My name is Sean Dominguez. I've been teaching myself programming and web development since January 2014. Prior to that, I was the Director of Marketing and <em>(gasp)</em> non-technical co-founder of a startup in San Diego called Breadcrumbs. Breadcrumbs was formed at Startup Weekend San Diego in June 2012, received seed funding from Qualcomm Labs in September 2012, and was admitted into the tech incubator EvoNexus.
+		</p>
+		<p>
+			I really enjoyed being a part of a startup. It opened my eyes to the neat things that can be accomplished with good code, lots of coffee, belief in your product, and hustle. The experience made me realize what I wanted to do in life: solve interesting problems. So after I left the company in December 2013, I decided to become a web developer and taught myself using books, MOOCs, and tutorials. You can see a list of those <a href="http://drivelous.tumblr.com/courses">here</a>.
+		</p>
+		<p>
+			I'm using this site as a sort of living portfolio for what I know. First it was to learn Django. Then getting it up required learning git, so I learned git. As I learn JavaScript and some JavaScript frameworks, I'll add those in as well.
+		</p>
+		<p>
+			And so on and so on.
+		</p>
+		<p>
+			Questions? Send me an email at sean@drivelous.com or user the <a href="{% url 'contact_me' %}">contact form</a>.
+		</p>
+	</div>
+</div>
+
+
+{% endblock%}

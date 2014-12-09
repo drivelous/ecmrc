@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-xs-9 col-xs-offset-1">
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <div class="alert alert-info" role="alert"{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</div>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>Shipping and Payment Details</h3>
+      </div>
+      <form action='' method='POST'>{% csrf_token %}
+      <div class="panel-body">
+        <div class="col-xs-4">
+          <div class="panel panel-default">
+            <div class="panel-body">
+          <h4>Shipping Address</h4>
+          {% if shipping_address %}
+          <p>{% if shipping_address.nickname %}
+            <strong>{{ shipping_address.nickname }}</strong></br>
+          {% endif %}
+          {{ shipping_address.first_name }} {{shipping_address.last_name }}</br>
+          {{ shipping_address.address1 }}</br>
+          {% if shipping_address.address2|length > 0 %}
+            {{ shipping_address.address2 }}</br>
+          {% endif %}
+          {{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.zip_code }}</br>
+          {{ shipping_address.phone_number }}</p>
+          {% else %}
+            <p><em>There is no shipping address on file.</em></p>
+          {% endif %}
+          <input class="btn btn-default pull-right" type="submit" name="shipping" value="Change shipping">
+        </div><!--close shipping panel body-->
+      </div><!--close shipping panel-->
+      </div><!--close shipping div-->
+      <div class="col-xs-7 col-xs-offset-1">
+        <div class="panel panel-default">
+          <div class="panel-body">
+        <div class="col-xs-6">
+          <h4>Billing Address</h4>
+          <p>{% if order.billing_address1 %}
+            {{ order.full_name }}</br>
+            {{ order.billing_address1 }}</br>
+            {% if order.billing_address2 %}
+              {{ order.billing_address2 }}</br>
+            {% endif %}
+          {{ order.billing_city }}, {{ order.billing_state }} {{ order.billing_zip }}</br>
+          {% else %}
+            <p>There is no billing address on file</p>
+          {% endif %}
+        </div>
+        <div class="col-xs-6">
+          <h4>Payment</h4>
+          {% if order.cc_four %}
+            <p>{{ order.brand }} Card ending in {{ order.cc_four }}</br>
+              Exp: {{ order.exp_month }}/{{ order.exp_year }}</p></br>
+            </br>
+          {% else %}
+            <p>There is no payment method on file</p>
+          {% endif %}
+            <input class="btn btn-default pull-right" type="submit" name="payment" value="Change payment">
+        </div><!--close payment method div-->
+      </div><!--close panel body div-->
+    </div><!--close panel div-->
+  </div><!--close billing/payment panel-->
+</div><!--close shipping and payment panel body-->
+</div><!--close shipping and payment panel-->
+  {% if cart and cart.active %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>Order Details</h3>
+      </div>
+      <div class="panel-body">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Photo</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+
+      {% for item in cart.cartitem_set.all %}
+        <tr>
+          {% if item.product_type|stringformat:"s" == "Shirt" %}
+            <td><a href="{% url 'shirt_detail' item.product.slug %}" target="_blank"><img style="max-width:50px" src="{{ MEDIA_URL }}{{ item.product.productimage_set.all.0.image }}"></a></td>
+          {% elif item.product_type|stringformat:"s" == "Album" %}
+            <td><a href="{% url 'album_detail' item.product.slug %}" target="_blank"><img style="max-width:50px" src="{{ MEDIA_URL }}{{ item.product.productimage_set.all.0.image }}"></a></td> 
+          {% endif %}       
+          <td>
+            {{ item.name }}
+              <small>
+                <ul class="cartitem-detail">
+                  {% if item.product_type|stringformat:"s" == "Shirt" %}
+                    <li>Brand: <a href="{% url 'brand_detail' item.product.get_parent_slug %}" target="_blank">{{ item.product.get_parent }}</a></li>
+                    <li>Color: {{ item.product.get_style_name }}</li>
+                    <li>Size: {{ item.size }}</li>
+                  {% elif item.product_type|stringformat:"s" == "Album" %}
+                    <li>by <a href="{% url 'artist_detail' item.product.get_parent_slug %}" target="_blank">{{ item.product.get_parent }}</a></li>
+                  {% endif %}
+                </ul>
+              </small>
+          </td>
+          <td>${{ item.price|stringformat:".02f" }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>${{ item.total|stringformat:".02f" }}</td>
+        </tr>
+      {% endfor %}
+        <tfoot>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>${{ cart.total|stringformat:".02f" }}</td>
+        </tfoot>
+      </table>
+              <div class="row">
+                <div class="col-xs-3 col-xs-push-9">
+                  <a class="btn btn-link" href="{% url 'view_cart' %}">Edit Order</a>
+        {% if order.shipping_address and order.billing_address1 %}
+                    <input class="btn btn-default" type="submit" name="finalize" value="Submit payment"></br>
+                </div><!-- ends col-xs-3 col-xs-push-9-->
+                <div class="col-xs-7 col-xs-pull-2">
+                  <div class="form-group">
+                  <small><p>NOTE: To receive an order confirmation if you used a fake email to sign up, enter your real address here. It will NOT be saved.</p></small>
+                  <input class="form-control" id="id_email" name="email" type="email" placeholder="Enter email">
+                  </div><!--closes form-group-->
+                </div>
+              </div> <!--closes recent row-->
+        {% else %}
+          </div><!-- ends col-xs-3 col-xs-push-9-->
+        {% endif %}
+      </form> <!--closes form for shipping, add payment, and finalize-->
+  </div>
+</div>
+  {% else %}
+  {% endif %}
+</div><!--closes col-xs-9 offset 1-->
+</div><!--closes opening row class-->
+{% endblock %}
+
+{% block js_checkout %}
+
+    // This identifies your website in the createToken call below
+    Stripe.setPublishableKey('pk_test_pg1JLNABYjkb84SCeSjfCMO9');
+ 
+    var stripeResponseHandler = function(status, response) {
+      var $form = $('#payment-form');
+ 
+      if (response.error) {
+        // Show the errors on the form
+        $form.find('.payment-errors').text(response.error.message);
+        $form.find('button').prop('disabled', false);
+      } else {
+        // token contains id, last4, and card type
+        var token = response.id;
+        // Insert the token into the form so it gets submitted to the server
+        $form.append($('<input type="hidden" name="stripeToken" />').val(token));
+        // and re-submit
+        $form.get(0).submit();
+      }
+    };
+ 
+    jQuery(function($) {
+      $('#payment-form').submit(function(e) {
+        var $form = $(this);
+ 
+        // Disable the submit button to prevent repeated clicks
+        $form.find('button').prop('disabled', true);
+ 
+        Stripe.createToken($form, stripeResponseHandler);
+ 
+        // Prevent the form from submitting with the default action
+        return false;
+      });
+    });
+{% endblock %}

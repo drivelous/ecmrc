@@ -1,0 +1,83 @@
+{% extends 'accounts/base_profile.html' %}
+
+{% block profile %}
+
+<div class="row">
+	<a href="{% url 'profile' %}">&larr; Back to Profile</a>
+</div>
+<h1 class="text-center">Order History</h1>
+</br>
+
+{% if orders %}
+{% for order in orders %}
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<div class="row">
+				<small>
+					<div class="col-xs-4">
+						<p><strong>Ordered</strong></br>
+						{{ order.date_completed.date }}
+						</p>
+					</div>
+					<div class="col-xs-2">
+						<p><strong>Order total</strong></br>
+							${{ order.cart.total }}
+						</p>
+					</div>
+					<div class="col-xs-3">
+						<p><strong>Shipped to</strong></br>
+							{{ order.shipping_first_name }} {{ order.shipping_last_name }}
+						</p>
+					</div>
+					<div class="col-xs-3">
+						<p><strong>Order #{{ order.order_id }}</strong></br>
+						<a href="{% url 'order_detail' order.order_id %}">Order Details</a></p>
+					</div>
+				</small>
+			</div>
+		</div>
+		<div class="panel-body">
+				{% for item in order.cart.get_cart_items %}
+						<div class="row top-buffer">
+							<div class="col-xs-2">
+								{% if item.product_type|stringformat:"s" == "Shirt" %}
+									<a href="{% url 'shirt_detail' item.product.slug %}" target="_blank"><img style="max-width:75px" src="{{ MEDIA_URL }}{{ item.product.get_default_image }}"></a>
+								{% elif item.product_type|stringformat:"s" == "Album" %}
+									<a href="{% url 'album_detail' item.product.slug %}" target="_blank"><img style="max-width:75px" src="{{ MEDIA_URL }}{{ item.product.get_default_image }}"></a>	
+								{% endif %}
+							</div>
+							<div class="col-xs-8">
+								<p>{{ item.name }}</p>
+										<small>
+											<ul class="cartitem-detail">
+												<li>{{ item.quantity }} purchased @ ${{ item.price }}</li>
+												{% if item.product_type|stringformat:"s" == "Shirt" %}
+													<li>Brand: <a href="{% url 'brand_detail' item.product.get_parent_slug %}" target="_blank">{{ item.product.get_parent }}</a></li>
+													<li>Size: {{ item.size }}</li>
+												{% elif item.product_type|stringformat:"s" == "Album" %}
+													<li>Artist: <a href="{% url 'artist_detail' item.product.get_parent_slug %}" target="_blank">{{ item.product.get_parent }}</a></li>
+												{% endif %}
+											</ul>
+										</small>
+							</div>
+							<div class="col-xs-2">
+								<p>${{ item.total|stringformat:".02f" }}</p>
+							</div>
+						</div>
+					{% endfor %}
+		</div>
+	</div><!--close panel entirely-->
+
+{% endfor %}
+{% else %}
+	<div class="well">
+		<div class="row">
+			<div class="col-xs-12">
+				<p>
+					<em>There are no orders yet. Perhaps search our extensive selection of <a href="{% url 'all_shirts' %}">shirts</a>.</em>
+				</p>
+			</div>
+		</div>
+	</div>
+{% endif %}
+{% endblock %}

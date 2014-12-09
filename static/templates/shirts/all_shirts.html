@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% load shirt_price %}
+
+{% block content %}
+	{% include 'results.html' %}
+
+	<div class="row">
+		<div class="col-xs-2">
+			<h4>Filter results</h4>
+			<ul class="list-unstyled">
+				{% if not brand_query %}
+					<div class="newGroup">
+						<span>Companies</span>
+						{{ request.GET.querydict }}
+							{% for brand in brands %}
+								<li><a href="{{ currenturl }}company={{ brand }}">{{ brand }}</a></li>
+							{% endfor %}
+					</div>
+				{% endif %}
+				{% if not size_query %}
+				<div class="newGroup">
+				<span>Sizes</span>
+					{% for size in sizes %}
+						<li><a href="{{ currenturl }}size={{ size }}">{{ size }}</a></li>
+					{% endfor %}
+				</div>
+				{% endif %}
+			</ul>
+		</div><!--closes categories col - col-xs-2 -->
+	<div class="col-xs-10">
+			{% if paginator.count == 0 %}
+				<div class="row">
+					<div class="col-xs-12">
+						<p><em>There were no results for your search.</em></p>
+					</div>
+				</div>
+			{% else %}
+			<div class="row">
+			<div class="col-xs-12">
+				{% if brand_query or size_query %}
+					<h4>Filters applied:</h4>
+					<p>{% if brand_query %}Company: {{ brand_query }}</br>{% endif %}
+					{% if size_query %}Size: {{ size_query }}</br>{% endif %}</p>
+				{% endif %}
+			</div>
+		</div>
+		{% for shirt in shirts %}
+		{% if forloop.first %}<div class="row">
+		{% elif forloop.counter0|divisibleby:4 %}<div class="row">
+		{% endif %}
+			<div class="col-xs-3">
+				<a href="{% url 'shirt_detail' shirt.get_slug %}">
+					<img class="center-block" style="max-width:150px" src="{{ MEDIA_URL }}{{ shirt.get_default_image }}">
+				</a>
+				<a href="{% url 'shirt_detail' shirt.get_slug %}">
+					<p class="text-center product_link">{{ shirt.get_parent }}</br>
+						{{ shirt.name }}</br>
+						{{ shirt.get_style_name }}</br>
+						${{ shirt|shirt_price }}
+					</p>
+				</a>
+			</div>
+		{% if forloop.last %}</div>
+		{% elif forloop.counter|divisibleby:4 %}</div>
+		{% endif %}
+		{% endfor %}
+	{% endif %}
+	</div>
+	</div><!--closes row of col-xs-2 col-xs-10-->
+
+{% endblock %}

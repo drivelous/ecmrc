@@ -1,0 +1,13 @@
+Thanks for your order, {{ user }}!
+
+{% for item in cart.get_cart_items %}
+	Name: {{ item.name }}
+	Price: {{ item.price }}
+	Qty: {{ item.quantity }}
+	Total: {{ item.total }}
+
+{% endfor %}
+
+Subtotal: {{ cart.total }}
+
+Feedback? Comments? Send me a message at sean@drivelous.com

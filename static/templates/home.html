@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+	
+	<div class="row">
+		<div class="hrSmall"><hr></div>
+			<h4 class="text-center">Fake buy cool things</h4>
+		<div class="hrSmall"><hr></div>
+			<div class="row">
+				<div class="col-xs-6">
+					<h4 class="text-center"><a href="{% url 'all_shirts' %}">Shop T-Shirts</a></h4>
+				</div>
+				<div class="col-xs-6">
+					<h4 class="text-center"><a href="{% url 'all_albums' %}">Shop Albums</a></h4>
+				</div>
+			</div><!--closes shop shirts and albums row<-->
+		<div class="hrSmall"><hr></div>
+
+	</div>
+	<div class="row">
+		<div class="col-xs-3">
+			{% for type in product_types %}
+			<div class="newGroup linkGroupBlack">
+				<p><strong>
+					{% if type|stringformat:"s" == 'Shirt' %}
+						Clothing brands
+					{% elif type|stringformat:"s" == 'Album' %}
+						Music artists
+					{% endif %}
+				</strong></p>
+					{% for parent in type.get_parents %}
+						<div class="hrSmall"><hr></div>
+						{% if type|stringformat:"s" == "Shirt" %}
+							<a href="{% url 'brand_detail' parent.get_slug %}">{{ parent.name }}</a>
+						{% elif type|stringformat:"s" == "Album" %}
+							<a href="{% url 'artist_detail' parent.get_slug %}">{{ parent.name }}</a>
+						{% endif %}
+					{% endfor %}
+			</div><!--ends newGroup-->			
+			{% endfor %}
+		</div><!--end col-xs-3 sidebar-->
+		<div class="col-xs-9">
+			<h3>Random dopeness</h3>
+			{% for product in products %}
+				{% if forloop.first %}
+				<div class="newGroup">
+					<div class="row">
+				{% endif %}
+				<div class="col-xs-3">
+					{% if product.product_type|stringformat:"s" == 'Shirt' %}
+						<a href="{% url 'shirt_detail' product.slug %}"><img class="img-responsive" src="{{ MEDIA_URL }}{{ product.get_default_image }}"></a>
+					{% elif product.product_type|stringformat:"s" == 'Album' %}
+						<a href="{% url 'album_detail' product.slug %}"><img class="img-responsive" src=" {{ MEDIA_URL }}{{ product.get_default_image }}"></a>
+					{% endif %}
+				</div>
+				{% if forloop.last %}
+					</div><!--closes row-->
+				</div><!--closes newGroup-->
+				{% elif forloop.counter|divisibleby:4 %}
+					</div><!--closes row-->
+				</div><!--closes newGroup-->
+				<div class="newGroup">
+					<div class="row">
+				{% endif %}
+			{% endfor %}
+		</div>
+
+	</div>
+
+{% endblock %}
+
+<!-- old image code here
+
+		<div class="col-xs-4">
+			<img style="max-height:100px" src="{{ MEDIA_URL }}/{{ shirt.get_default_image }}"></br>
+			<a href="{{ shirt.slug }}">{{ album.name }}</a>
+		</div>
+
+-->

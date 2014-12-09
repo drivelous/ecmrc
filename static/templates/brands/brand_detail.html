@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% load shirt_price %}
+
+{% block content %}
+
+<div class="row">
+	<div class="col-xs-4">
+		<img class="img-responsive" src="{{ MEDIA_URL }}/{{ brand.profile }}">
+	</div><!--close default img div-->
+	<div class="col-xs-8">
+		<h1>{{ brand.name }}</h1>
+		<hr>
+		<p>{{ brand.about }}</p>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-xs-12">
+		<h3>Items from {{ brand.name }}</h3>
+		<hr>
+		<div class="row">
+			<div class="col-xs-10 col-xs-offset-1">
+			{% for style in brand.get_active_shirts %}
+				<div class="col-xs-2">
+					<a href="{% url 'shirt_detail' style.get_slug %}"><img class="img-responsive" src="{{ MEDIA_URL }}/{{ style.get_default_image }}"></a>
+					<ul class="list-unstyled">
+						<small>
+							<li>{{ style.name }}</li>
+							<li>by {{ brand.name }}</li>
+							<li>$ {{ style|shirt_price }}</li>
+						</small>
+					</ul>
+				</div>
+			{% endfor %}
+			</div>
+		</div>
+	</div>
+</div>
+
+
+{% endblock %}

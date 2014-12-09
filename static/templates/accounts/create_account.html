@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+	<div class="col-xs-8 col-xs-offset-2">
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<form method="POST" action="" id="signup-form" class="form-horizontal" role="form">{% csrf_token %}
+					<div class="form-group">
+						<h2 class="text-center">Sign up for an account</h2>
+					</div>
+					<div class="alert alert-danger">
+						 <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+						 <span><strong>Heads up!</strong></span>
+						 <p>This is a portfolio project, so use a real email address at your own risk. Certainly don't use one of your real passwords.</p>
+					</div>
+					<div class="form-group">
+						<label for="id_username" name="username" class="col-xs-2 control-label">Username</label>
+						<div class="col-xs-10">
+							<input type="text" name="username" class="form-control" id="id_username" placeholder="Username">
+							{% if form.username.errors %}
+								<ul class="errorlist list-unstyled">
+									{% for error in form.username.errors %}
+									<li>{{ error }}</li>
+									{% endfor %}
+								</ul>
+							{% endif %}
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="id_email" name="email" class="col-xs-2 control-label">Email</label>
+						<div class="col-xs-10">
+							<input type="text" name="email" class="form-control" id="id_email" placeholder="Email">
+							{% if form.email.errors %}
+								<ul class="errorlist list-unstyled">
+									{% for error in form.email.errors %}
+									<li>{{ error }}</li>
+									{% endfor %}
+								</ul>
+							{% endif %}
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="id_password1" name="password1" class="col-xs-2 control-label">Password</label>
+						<div class="col-xs-10">
+							<input type="password" name="password1" class="form-control" id="id_password1" placeholder="Password">
+							{% if form.password1.errors %}
+								<ul class="errorlist list-unstyled">
+									{% for error in form.password1.errors %}
+									<li>{{ error }}</li>
+									{% endfor %}
+								</ul>
+							{% endif %}
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="id_password2" name="password2" class="col-xs-2 control-label">Confirm Password</label>
+						<div class="col-xs-10">
+							<input type="password" name="password2" class="form-control" id="id_password2" placeholder="Confirm your password choice">
+							{% if form.password2.errors %}
+								<ul class="errorlist list-unstyled">
+									{% for error in form.password2.errors %}
+									<li>{{ error }}</li>
+									{% endfor %}
+								</ul>
+							{% endif %}
+						</div>
+					</div>
+			          <div class="form-group">
+			            <p class="col-xs-10 col-xs-offset-2">Have an account already? Click <a href="{%url 'login' %}">here</a>.</p>
+			          </div>
+					<div class="form-group">
+						<div class="col-xs-offset-2 col-xs-10">
+							<button class="btn btn-default" type="submit">Sign up</button>
+						</div>
+					</div>
+			</div><!-- close panel body-->
+		</div>
+	</div>
+</div>
+</form>
+
+{% endblock %}
+
+<!--
+<form action="" method="POST" id="signup-form">{% csrf_token %}
+	<table class="table table-condensed">
+		<tr><th><label for="id_first_name">First name:</label></th><td><input id="id_first_name" maxlength="30" name="first_name" type="text" /></td></tr>
+
+		<tr><th><label for="id_last_name">Last name:</label></th><td><input id="id_last_name" maxlength="30" name="last_name" type="text" /></td></tr>
+
+		<tr><th><label for="id_email">Email address:</label></th><td><input id="id_email" maxlength="75" name="email" type="email" /></td></tr>
+
+		<tr><th><label for="id_username">Username:</label></th><td><input id="id_username" maxlength="30" name="username" type="text" /><br /></td></tr>
+
+		<tr><th><label for="id_password">Password:</label></th><td><input id="id_password" maxlength="128" name="password" type="text" /></td></tr>
+		<tfoot>
+			<button class="btn pull-right" type="submit">Sign-up</button>
+		</tfoot>
+	</table>
+
+</form>
+-->
+
+
+<!--
+
+<form action="" method="POST" id="signup-form">{% csrf_token %}
+	<table class="table table-collapse">
+
+		<tr><th><label for="id_username">Username:</label></th><td><input id="id_username" maxlength="30" name="username" type="text" /><br /></td></tr>
+
+		<tr><th><label for="id_password">Password:</label></th><td><input id="id_password" maxlength="128" name="password" type="text" /></td></tr>
+		
+		<button class="btn pull-right" type="submit">Sign-up</button>
+	</table>
+</form>
+
+-->

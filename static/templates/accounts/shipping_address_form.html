@@ -1,0 +1,212 @@
+{% extends 'accounts/base_profile.html' %}
+
+{% block profile %}
+		<div class="row">
+			<a href="{% url 'profile' %}">&larr; Back to Profile</a>
+		</div>
+		<h1 class="text-center">Address Book</h1>
+		</br>
+		{% if addresses %}
+		<div class="row">
+			{% for address in addresses %}
+				<div class="col-xs-6">
+					<form action="/accounts/shipping/" method="POST">{% csrf_token %}
+					<div class="panel panel-default">
+						<div class="panel-heading">
+						{% if address.default_address %}
+							<span class="label label-primary">Default</span>
+						{% endif %}
+							<strong>{{ address.nickname}}</strong>
+						</div>
+						<div class="panel-body">
+					<small>
+					<p>
+						{{ address.first_name }} {{ address.last_name }}</br>
+						{{ address.address1 }}</br>
+						{% if address.address2 %}
+							{{ address.address2 }}</br>
+						{% endif %}
+						{{ address.city }}, {{ address.state }} {{ address.zip_code }}
+						{% if not address.address2 %}</br></br>{% endif %}
+					</p>
+					</small>
+					<input id="id_address" name="address" type="hidden" value="{{ address.pk }}">
+						<input class="btn btn-xs btn-default pull-left" type="submit" name="default" value="Make default">
+						<input class="btn btn-xs btn-default pull-right" type="submit" name="delete" value="delete?">
+					</form>
+				</div>
+			</div>
+		</div>
+			{% endfor %}
+		</div><!--closes row of addresses-->
+		{% else %}
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="well">
+					<p>There are no addresses on file. Add one below.</p>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+	<div class="row">
+		<div class="col-xs-12">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+			<h2>Add Shipping Address</h2>
+			</div>
+			<div class="panel-body">
+			<form class="form-horizontal" action="/accounts/shipping/" method="POST" id="signup-form">{% csrf_token %}
+			<div class="form-group">
+			    <label class="col-xs-2 control-label" for="id_nickname">Nickname:</label>
+			    <div class="col-xs-6 col-xs-">
+				    <input class="form-control input-sm" id="id_nickname" maxlength="50" name="nickname" type="text" />
+				    {% if shipping_form.nickname.errors %}
+				    	<span class="help-block errorlist">{{ shipping_form.nickname.errors|striptags }}</span>
+				    {% endif %}
+				</div>
+			</div>
+			<div class="form-group">
+			    <label class="col-xs-2 control-label" for="id_first_name">First name:</label>
+			    <div class="col-xs-6">
+				    <input class="form-control input-sm" id="id_first_name" maxlength="50" name="first_name" type="text" />
+				    {% if shipping_form.first_name.errors %}
+				    	<span class="help-block errorlist">{{ shipping_form.first_name.errors|striptags }}</span>
+				    {% endif %}
+				</div>
+			</div>
+			<div class="form-group">
+			    <label class="col-xs-2 control-label" for="id_last_name">Last name:</label>
+			    <div class="col-xs-6">
+				    <input class="form-control input-sm" id="id_last_name" maxlength="50" name="last_name" type="text" />
+					<span class="help-block errorlist">{{ shipping_form.last_name.errors|striptags }}</span>
+				</div>
+			</div>
+			<div class="form-group">
+			    <label class="col-xs-2 control-label" for="id_address1">Address1:</label>
+			    <div class="col-xs-6">
+				    <input class="form-control input-sm" id="id_address1" maxlength="50" name="address1" type="text" />
+					<span class="help-block errorlist">{{ shipping_form.address1.errors|striptags }}</span>
+				</div>
+			</div>
+			<div class="form-group">
+			    <label class="col-xs-2 control-label" for="id_address2">Address2:</label>
+			    <div class="col-xs-6">
+				    <input class="form-control input-sm" id="id_address2" maxlength="50" name="address2" type="text" />
+					<span class="help-block errorlist">{{ shipping_form.address2.errors|striptags }}</span>	    
+				</div>
+			</div>
+			<div class="form-group">
+			    <label class="col-xs-2 control-label" for="id_city">City:</label>
+			    <div class="col-xs-6">
+				    <input class="form-control input-sm" id="id_city" maxlength="50" name="city" type="text" />
+					<span class="help-block errorlist">{{ shipping_form.city.errors|striptags }}</span>	
+				</div>
+			</div>
+			<div class="form-group">
+			    <label class="col-xs-2 control-label" for="id_state">State:</label>
+			    <div class="col-xs-6">
+				    <select class="form-control input-sm" id="id_state" maxlength="50" name="state"/>
+					    <option value="" selected="selected"></option>
+						<option value="AL">Alabama</option>
+						<option value="AK">Alaska</option>
+						<option value="AS">American Samoa</option>
+						<option value="AZ">Arizona</option>
+						<option value="AR">Arkansas</option>
+						<option value="AA">Armed Forces Americas</option>
+						<option value="AE">Armed Forces Europe</option>
+						<option value="AP">Armed Forces Pacific</option>
+						<option value="CA">California</option>
+						<option value="CO">Colorado</option>
+						<option value="CT">Connecticut</option>
+						<option value="DE">Delaware</option>
+						<option value="DC">District of Columbia</option>
+						<option value="FL">Florida</option>
+						<option value="GA">Georgia</option>
+						<option value="GU">Guam</option>
+						<option value="HI">Hawaii</option>
+						<option value="ID">Idaho</option>
+						<option value="IL">Illinois</option>
+						<option value="IN">Indiana</option>
+						<option value="IA">Iowa</option>
+						<option value="KS">Kansas</option>
+						<option value="KY">Kentucky</option>
+						<option value="LA">Louisiana</option>
+						<option value="ME">Maine</option>
+						<option value="MD">Maryland</option>
+						<option value="MA">Massachusetts</option>
+						<option value="MI">Michigan</option>
+						<option value="MN">Minnesota</option>
+						<option value="MS">Mississippi</option>
+						<option value="MO">Missouri</option>
+						<option value="MT">Montana</option>
+						<option value="NE">Nebraska</option>
+						<option value="NV">Nevada</option>
+						<option value="NH">New Hampshire</option>
+						<option value="NJ">New Jersey</option>
+						<option value="NM">New Mexico</option>
+						<option value="NY">New York</option>
+						<option value="NC">North Carolina</option>
+						<option value="ND">North Dakota</option>
+						<option value="MP">Northern Mariana Islands</option>
+						<option value="OH">Ohio</option>
+						<option value="OK">Oklahoma</option>
+						<option value="OR">Oregon</option>
+						<option value="PA">Pennsylvania</option>
+						<option value="PR">Puerto Rico</option>
+						<option value="RI">Rhode Island</option>
+						<option value="SC">South Carolina</option>
+						<option value="SD">South Dakota</option>
+						<option value="TN">Tennessee</option>
+						<option value="TX">Texas</option>
+						<option value="UT">Utah</option>
+						<option value="VT">Vermont</option>
+						<option value="VI">Virgin Islands</option>
+						<option value="VA">Virginia</option>
+						<option value="WA">Washington</option>
+						<option value="WV">West Virginia</option>
+						<option value="WI">Wisconsin</option>
+						<option value="WY">Wyoming</option>
+					</select>
+					<span class="help-block errorlist">{{ shipping_form.state.errors|striptags }}</span>
+				</div>
+			</div>
+			<div class="form-group">
+			    <label class="col-xs-2 control-label" for="id_country">Country</label>
+			    <div class="col-xs-6">
+				    <input class="form-control input-sm" id="id_country" maxlength="50" name="country" type="text" />
+					<span class="help-block errorlist">{{ shipping_form.country.errors|striptags }}</span>
+				</div>
+			</div>
+			<div class="form-group">
+			    <label class="col-xs-2 control-label" for="id_zip_code">Zip code:</label>
+			    <div class="col-xs-6">
+				    <input class="form-control input-sm" id="id_zip_code" maxlength="50" name="zip_code" type="text" />
+					<span class="help-block errorlist">{{ shipping_form.zip_code.errors|striptags }}</span>
+				</div>
+			</div>
+			<div class="form-group">
+			    <label class="col-xs-2 control-label" for="id_phone_number">Phone number:</label>
+			    <div class="col-xs-6">
+				    <input class="form-control input-sm" id="id_phone_number" maxlength="50" name="phone_number" type="text" />
+					<span class="help-block errorlist">{{ shipping_form.phone_number.errors|striptags }}</span>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-xs-offset-2 col-xs-10">
+					<div class="checkbox">
+						<label><input id="id_default_address" name="default_address" type="checkbox"> Default address</label>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-xs-offset-2 col-xs-10">
+					<input class="btn btn-primary" type="submit" name="save" value="Save">
+				</div>
+			</div>
+		</div>
+	</div>
+		</form>
+		</div>
+	</div>
+
+{% endblock %}

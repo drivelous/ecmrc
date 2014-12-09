@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+	{% include 'results.html' %}
+
+	<div class="pagination">
+	    <span class="step-links">
+	        {% if albums.has_previous %}
+	            <a href="?page={{ artists.previous_page_number }}">previous</a>
+	        {% endif %}
+
+	        <span class="current">
+	            Page {{ artists.number }} of {{ artists.paginator.num_pages }}.
+	        </span>
+
+	        {% if artists.has_next %}
+	            <a href="?page={{ artists.next_page_number }}">next</a>
+	        {% endif %}
+	    </span>
+	</div>
+
+	<div class="row">
+		<div class="col-xs-2">
+			<ul>
+				<li>This</li>
+				<li>Is</li>
+				<li>Filler</li>
+			</ul>
+		</div><!--closes categories col-->
+	<div class="col-xs-10">
+	{% for artist in artists %}
+			<div class="row">
+				<div class="col-xs-3">
+					<img style="max-height:100px;" src="{{ MEDIA_URL }}/{{ artist.0.profile }}"></br>
+					<a href="{% url 'artist_detail' artist.0.slug %}">{{ artist.0.name }}</a>
+				</div><!--close photo row section-->
+				<div class="col-xs-7">
+					<p>{{ artist.0.bio }}</p>
+
+						Albums:</br> <!--BAD BAD BAD ALTER THE CSS FOR THIS LOOP-->
+						{% for album in artist.1|slice:":3" %}
+							<a href="{% url 'album_detail' album.slug %}">{{ album }}</a></br>
+						{% endfor %}
+
+				</div><!--close bio section-->
+
+				<div class="col-xs-2">
+					<p>Price holder</p>
+				</div>
+
+			</div><!--close row-->
+			<hr>
+
+	{% endfor %}
+		</div>
+	</div><!--closes row-->
+
+
+{% endblock %}

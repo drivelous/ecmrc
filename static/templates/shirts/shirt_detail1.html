@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% load dict_from_list %}
+
+{% block content %}
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+<div class="row">
+	<div class="col-xs-3">
+		<img class="img-responsive" src="{{ MEDIA_URL }}/{{ default.image }}">
+		<hr>
+		<div class="row">
+		{% for image in images %}
+		 <div class="col-xs-4">
+		 	<img class="img-responsive" src="{{ MEDIA_URL }}/{{ image.image }}">
+		 </div> <!--close div in for loop for small imgs-->
+		 {% endfor %}
+		</div><!--close row div for small imgs-->
+	</div><!--close img div-->
+
+	<div class="col-xs-8 pull-right">
+		<div class="col-xs-6">
+			<h2>{{ shirt.name }}</h2>
+			<div id="sizes">
+				{% for size in sizes %}
+					{% if stock|get_item:size.1 == 0 %}
+						<div class="unavailable">{{ size.0 }}</div>
+					{% else %}
+						<div class="available">{{ size.0 }}</div>
+					{% endif %}
+				{% endfor %}
+			</div>
+			<div id="notManyLeft">
+				<p>Only 5 left!</p>
+			</div>
+			<div id="otherStyles">
+				<h4>Other styles</h4>
+				{% for style in other_styles %}
+					<a href="{% url 'shirt_detail' style.1 %}"><img class="img-responsive" src="{{ MEDIA_URL }}/{{ style.0.image }}"></a>
+				{% endfor %}
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-6">
+				<form method="POST" action="/cart/add" class="pull-right"> {% csrf_token %}
+					<input id="id_slug" maxlength="50" name="slug" type="hidden" value="{{ shirt.slug }}"/></p>
+<p><label for="id_quantity">Quantity:</label> <input id="id_quantity" name="quantity" type="number" /></p>
+					<input class="pull-right btn" type="submit" value="Add to cart">
+				</form>
+			</div>
+		</div>
+		<hr>
+		<p>{{ shirt.description }}</p>
+	</div>
+
+
+
+{% endblock %}

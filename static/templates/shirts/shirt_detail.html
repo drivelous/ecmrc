@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% load dict_from_list %}
+
+{% load shirt_price %}
+
+{% block content %}
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+<div class="row">
+	<div class="col-xs-7">
+		<div id="shirtImages">
+			<img class="img-responsive" src="{{ MEDIA_URL }}{{ default }}">
+		</div> <!--close shirtImages div-->
+		<hr>
+		<div class="row">
+			<h3>Description</h3>
+			<p>{{ shirt.description|safe|linebreaks }}</p>
+		</div><!--close product description row-->
+	</div><!--close left div-->
+
+	<div class="col-xs-4 pull-right">
+		<form method="POST" action="" class="pull-right"> {% csrf_token %}
+			<div class="panel panel-default">
+				<div class="panel-body">
+				<h3>{{ shirt.name }}</h3>
+				<p>by <a href="{% url 'brand_detail' shirt.get_parent_slug %}" target="_blank">{{ shirt.get_parent }}</a></p>
+				<hr>
+				<div class="row">
+					<div class="col-xs-6">
+						<h4>Color</h4><p>{{ shirt.get_style_name }}<p>
+					</div>
+					<div class="col-xs-6">
+						<div id="qtyAvail">
+							<h4>Availability</h4>
+							{% if all_available == 0 %}
+								<p class="notMany">SOLD OUT!</p>
+							{% elif all_available <= 10 %}
+								<p class="notMany">Only {{ all_available }} left!</p>
+							{% else %}
+								<p> {{ all_available }} in stock</p>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+				{% if all_available > 0 %}
+				<div id="sizes">
+					<h4 style="text-align: center">Sizes</h4>
+					<div class="col-xs-11 col-xs-offset-1">
+						{% for size in stock %}
+							<input type="radio" id="radio{{ forloop.counter0 }}" name="size" value="{{ size }}">
+							<label for="radio{{ forloop.counter0 }}">{{ size }}</label>
+						{% endfor %}
+						{% if add_product.size.errors %}
+							{% for error in add_product.size.errors %}
+								<p><strong>{{ error|escape }}</strong></p>
+							{% endfor %}
+						{% endif %}
+					</div>
+				</div> <!--closes sizes div-->
+				<input id="id_pk" maxlength="50" name="pk" type="hidden" value="{{ shirt.pk }}"/>
+				<input id="id_product_type" maxlength="50" name="product_type" type="hidden" value="{{ shirt.product_type }}"/>
+				<div class="row">
+						<div class="col-xs-6">
+							<h4>Qty.</h4>
+							<select class="form-control" id="id_quantity" name="quantity">
+								{% for num in quantity %}
+									<option value="{{ forloop.counter }}">{{ forloop.counter }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-xs-6">
+							<h4 class="pull-right">${{ price }}</h4>
+							<input class="btn btn-success pull-right" type="submit" value="Add to cart">
+						</div>
+					</div> <!--closes row-->
+				{% else %}
+				{% endif %}
+				<hr>
+				<div id="otherStyles">
+					<h4>Available Styles</h4>
+						<div class="row">
+							<div class="col-xs-10">
+								{% for style in other_styles %}
+									<div class="col-xs-6">
+										<a href="{% url 'shirt_detail' style.1 %}"><img class="img-responsive" src="{{ MEDIA_URL }}{{ style.0 }}"></a>
+									</div>
+								{% endfor %}
+							</div>
+						</div>
+					</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	
+	<div class="row">
+	<div class="col-xs-12">
+		<h3>Items from {{ brand.name }}</h3>
+		<hr>
+		<div class="row">
+			<div class="col-xs-10 col-xs-offset-1">
+			{% for style in brand.get_active_shirts %}
+				<div class="col-xs-2">
+					<a href="{% url 'shirt_detail' style.get_slug %}"><img class="img-responsive" src="{{ MEDIA_URL }}/{{ style.get_default_image }}"></a>
+					<ul class="list-unstyled">
+						<small>
+							<li>{{ style.name }}</li>
+							<li>by {{ brand.name }}</li>
+							<li>$ {{ style|shirt_price }}</li>
+						</small>
+					</ul>
+				</div>
+			{% endfor %}
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

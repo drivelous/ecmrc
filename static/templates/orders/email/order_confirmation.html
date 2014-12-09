@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Order Confirmation</h2>
+
+<p>Thanks for playing with my eCommerce project, {{ user }}. Here's a copy of the stuff that you 'pretend purchased'</p>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Photo</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+
+      {% for item in cart.get_cart_items %}
+        <tr>
+          {% if item.product_type|stringformat:"s" == "Shirt" %}
+            <td><a href="{{ SITE_URL }}{% url 'shirt_detail' item.product.slug %}" target="_blank"><img style="max-width:50px" src="{{ SITE_URL }}{{ MEDIA_URL }}{{ item.product.get_default_image }}"></a></td>
+          {% elif item.product_type|stringformat:"s" == "Album" %}
+            <td><a href="{{ SITE_URL}}{% url 'album_detail' item.product.slug %}" target="_blank"><img style="max-width:50px" src="{{ SITE_URL }}{{ MEDIA_URL }}{{ item.product.get_default_image }}"></a></td> 
+          {% endif %}       
+          <td>
+            {{ item.name }}
+              <small>
+                <ul>
+                  {% if item.product_type|stringformat:"s" == "Shirt" %}
+                    <li>Brand: <a href="{{ SITE_URL }}{% url 'brand_detail' item.product.get_parent_slug %}" target="_blank">{{ item.product.get_parent }}</a></li>
+                    <li>Color: {{ item.product.get_style_name }}</li>
+                    <li>Size: {{ item.size }}</li>
+                  {% elif item.product_type|stringformat:"s" == "Album" %}
+                    <li>by <a href="{{ SITE_URL }}{% url 'artist_detail' item.product.get_parent_slug %}" target="_blank">{{ item.product.get_parent }}</a></li>
+                  {% endif %}
+                </ul>
+              </small>
+          </td>
+          <td>${{ item.price|stringformat:".02f" }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>${{ item.total|stringformat:".02f" }}</td>
+        </tr>
+      {% endfor %}
+        <tfoot>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>${{ cart.total|stringformat:".02f" }}</td>
+        </tfoot>
+    </table>
+
+<p>Feedback? General comments? Send an email to sean@drivelous.com.</p>
+</body>
+</html>
